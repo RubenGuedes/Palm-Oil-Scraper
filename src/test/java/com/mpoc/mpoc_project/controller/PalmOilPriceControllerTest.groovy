@@ -27,7 +27,6 @@ class PalmOilPriceControllerTest extends Specification {
                  oilPrice2
     List<PalmOilPrice> allOilPrice
 
-    @Autowired
     MockMvc mockMvc
     PalmOilPriceController palmOilPriceController
     PalmOilPriceRepository palmOilPriceRepository
@@ -68,7 +67,7 @@ class PalmOilPriceControllerTest extends Specification {
 
         when:
             varAux = mockMvc.perform(get(requestURI+"/${oilPrice1.getDate()}")
-                                .accept(MediaType.APPLICATION_JSON_UTF8))
+                                .accept(APPLICATION_JSON_UTF8))
                             .andExpect(status().isOk())
                             .andReturn().response.getContentAsString()
 
@@ -104,7 +103,14 @@ class PalmOilPriceControllerTest extends Specification {
             PalmOilPrice instanceOil
 
             List<PalmOilPrice> resultList = [oilPrice1, oilPrice2]
-            1 * palmOilPriceRepository.findAll() >> [oilPrice1, oilPrice2]
+
+            1 * palmOilPriceRepository.findById(oilPrice1.getDate()) >> oilPrice1
+            1 * palmOilPriceRepository.findById(oilPrice2.getDate()) >> oilPrice2
+
+            1 * palmOilPriceRepository.saveAndFlush(oilPrice1) >> oilPrice1
+            1 * palmOilPriceRepository.saveAndFlush(oilPrice2) >> oilPrice2
+
+            1 * palmOilPriceRepository.findAll() >> resultList
 
         when:
 
@@ -129,6 +135,7 @@ class PalmOilPriceControllerTest extends Specification {
             def resultString
 
             1 * palmOilPriceRepository.saveAndFlush(_) >> oilPrice1
+            1 * palmOilPriceRepository.findById(_) >> new Optional<>()
 
             ObjectMapper mapper = new ObjectMapper()
             mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false)
